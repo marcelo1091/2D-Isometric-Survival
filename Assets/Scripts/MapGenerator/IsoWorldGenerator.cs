@@ -1,9 +1,9 @@
-﻿// IsoWorldGenerator.cs
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Mirror;
 
-public class IsoWorldGenerator : MonoBehaviour
+public class IsoWorldGenerator : NetworkBehaviour
 {
     [Header("Chunk Settings")]
     public int chunkSize = 32;
@@ -20,23 +20,51 @@ public class IsoWorldGenerator : MonoBehaviour
 
     public float waterThreshold = 0.45f;
 
+    [SyncVar] public int seed;
+
     Dictionary<Vector2Int, IsoChunk> chunks = new();
     Queue<Vector2Int> chunkQueue = new();
 
     Vector2Int currentPlayerChunk;
 
-    void Start()
+    bool initialized = false;
+
+    // SERVER generuje seed
+    public override void OnStartServer()
     {
-        treeGenerator.Init(noise.seed, chunkSize);
+        seed = Random.Range(int.MinValue, int.MaxValue);
+    }
+
+    // CLIENT czeka aż seed przyjdzie
+    public override void OnStartClient()
+    {
+        StartCoroutine(InitWhenReady());
+    }
+
+    IEnumerator InitWhenReady()
+    {
+        while (NetworkClient.localPlayer == null)
+            yield return null;
+
+        player = NetworkClient.localPlayer.transform;
+
+        noise.SetNoiseSeed(seed);
+
+        treeGenerator.Init(seed, chunkSize);
 
         currentPlayerChunk = GetChunkCoord(player.position);
 
         StartCoroutine(ProcessChunkQueue());
         UpdateWorld();
+
+        initialized = true;
     }
 
     void Update()
     {
+        if (!initialized || player == null)
+            return;
+
         Vector2Int newChunk = GetChunkCoord(player.position);
 
         if (newChunk != currentPlayerChunk)
@@ -51,17 +79,17 @@ public class IsoWorldGenerator : MonoBehaviour
         HashSet<Vector2Int> needed = new();
 
         for (int x = -viewDistance; x <= viewDistance; x++)
-            for (int y = -viewDistance; y <= viewDistance; y++)
-            {
-                Vector2Int coord = currentPlayerChunk + new Vector2Int(x, y);
-                needed.Add(coord);
+        for (int y = -viewDistance; y <= viewDistance; y++)
+        {
+            Vector2Int coord = currentPlayerChunk + new Vector2Int(x, y);
+            needed.Add(coord);
 
-                if (!chunks.ContainsKey(coord))
-                {
-                    chunks.Add(coord, new IsoChunk(coord));
-                    chunkQueue.Enqueue(coord);
-                }
+            if (!chunks.ContainsKey(coord))
+            {
+                chunks.Add(coord, new IsoChunk(coord));
+                chunkQueue.Enqueue(coord);
             }
+        }
 
         List<Vector2Int> toRemove = new();
 
