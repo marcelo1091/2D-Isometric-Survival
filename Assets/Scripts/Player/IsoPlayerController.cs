@@ -1,6 +1,7 @@
+using Mirror;
 using UnityEngine;
 
-public class IsoPlayerController : MonoBehaviour
+public class IsoPlayerController : NetworkBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
@@ -8,12 +9,14 @@ public class IsoPlayerController : MonoBehaviour
 
     void Update()
     {
+        // tylko lokalny gracz steruje tą postacią
+        if (!isLocalPlayer) return;
+
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
         Vector3 moveDirection = new Vector3(horizontal, vertical, 0f).normalized;
 
-        // Sprawdzamy czy trzymany jest Shift
         bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
         float currentSpeed = isRunning ? runSpeed : moveSpeed;

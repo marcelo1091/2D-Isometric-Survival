@@ -1,7 +1,8 @@
+using Mirror;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class PlayerCameraController : MonoBehaviour
+public class PlayerCameraController : NetworkBehaviour
 {
     [Header("Zoom Settings")]
     public float zoomSpeed = 5f;
@@ -18,7 +19,7 @@ public class PlayerCameraController : MonoBehaviour
 
         if (!cam.orthographic)
         {
-            Debug.LogWarning("PlayerCameraController dzia³a tylko z kamer¹ Orthographic!");
+            Debug.LogWarning("PlayerCameraController dziaï¿½a tylko z kamerï¿½ Orthographic!");
         }
 
         targetZoom = cam.orthographicSize;

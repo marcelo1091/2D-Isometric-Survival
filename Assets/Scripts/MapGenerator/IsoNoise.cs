@@ -4,13 +4,14 @@ public class IsoNoise : MonoBehaviour
 {
     public float baseFrequency = 0.02f;
     public int octaves = 4;
-    public int seed = 123;
+    public int seed = 1234;
 
     float offsetX;
     float offsetY;
 
-    void Awake()
+    public void SetNoiseSeed(int newSeed)
     {
+        seed = newSeed;
         var prng = new System.Random(seed);
         offsetX = prng.Next(-100000, 100000);
         offsetY = prng.Next(-100000, 100000);
