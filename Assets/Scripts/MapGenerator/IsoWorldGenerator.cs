@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Mirror;
 
-public class IsoWorldGenerator : NetworkBehaviour
+public class IsoWorldGenerator : MonoBehaviour
 {
     [Header("Chunk Settings")]
     public int chunkSize = 32;
@@ -20,7 +20,7 @@ public class IsoWorldGenerator : NetworkBehaviour
 
     public float waterThreshold = 0.45f;
 
-    [SyncVar] public int seed;
+    public int seed;
 
     Dictionary<Vector2Int, IsoChunk> chunks = new();
     Queue<Vector2Int> chunkQueue = new();
@@ -28,7 +28,7 @@ public class IsoWorldGenerator : NetworkBehaviour
     Vector2Int currentPlayerChunk;
 
     bool initialized = false;
-
+/*
     // SERVER generuje seed
     public override void OnStartServer()
     {
@@ -39,6 +39,38 @@ public class IsoWorldGenerator : NetworkBehaviour
     public override void OnStartClient()
     {
         StartCoroutine(InitWhenReady());
+    }*/
+
+    public void StartServer()
+    {
+        seed = Random.Range(int.MinValue, int.MaxValue);
+        StartCoroutine(InitWhenReady());
+    }
+
+    /// <summary>
+    /// Initialize world for single-player mode
+    /// </summary>
+    public void InitializeSingleplayer()
+    {
+        seed = Random.Range(int.MinValue, int.MaxValue);
+        noise.SetNoiseSeed(seed);
+        treeGenerator.Init(seed, chunkSize);
+    }
+
+    /// <summary>
+    /// Set player transform for single-player mode
+    /// </summary>
+    public void SetPlayerTransform(Transform playerTransform)
+    {
+        player = playerTransform;
+        
+        if (player != null && !initialized)
+        {
+            currentPlayerChunk = GetChunkCoord(player.position);
+            StartCoroutine(ProcessChunkQueue());
+            UpdateWorld();
+            initialized = true;
+        }
     }
 
     IEnumerator InitWhenReady()

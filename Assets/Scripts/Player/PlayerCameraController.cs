@@ -2,7 +2,7 @@ using Mirror;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class PlayerCameraController : NetworkBehaviour
+public class PlayerCameraController : MonoBehaviour
 {
     [Header("Zoom Settings")]
     public float zoomSpeed = 5f;
