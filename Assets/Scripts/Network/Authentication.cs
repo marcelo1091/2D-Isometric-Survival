@@ -4,6 +4,7 @@ using Unity.Services.Core;
 using Unity.Services.Core.Environments;
 using UnityEngine;
 
+
 public class Authentication : MonoBehaviour
 {
     private async void Start()

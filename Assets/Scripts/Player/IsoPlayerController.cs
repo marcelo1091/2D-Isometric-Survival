@@ -7,10 +7,13 @@ public class IsoPlayerController : NetworkBehaviour
     public float moveSpeed = 5f;
     public float runSpeed = 9f;
 
+    private bool isSinglePlayer = false;
+
     void Update()
     {
-        // tylko lokalny gracz steruje tą postacią
-        if (!isLocalPlayer) return;
+        bool canControl = isSinglePlayer || isLocalPlayer;
+        
+        if (!canControl) return;
 
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
@@ -22,5 +25,13 @@ public class IsoPlayerController : NetworkBehaviour
         float currentSpeed = isRunning ? runSpeed : moveSpeed;
 
         transform.position += moveDirection * currentSpeed * Time.deltaTime;
+    }
+
+    /// <summary>
+    /// Mark this player as the local player in single-player mode
+    /// </summary>
+    public void SetLocalPlayer()
+    {
+        isSinglePlayer = true;
     }
 }
